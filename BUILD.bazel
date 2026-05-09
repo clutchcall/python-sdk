@@ -1,0 +1,18 @@
+load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:packaging.bzl", "py_wheel")
+
+py_library(
+    name = "clutchcall_python",
+    srcs = glob(["clutchcall/**/*.py"]),
+    imports = ["."],
+    data = ["//core:clutchcall_core_ffi.so"],
+    visibility = ["//visibility:public"],
+)
+
+py_wheel(
+    name = "clutchcall_python_wheel",
+    distribution = "clutchcall_sdk",
+    version = "1.0.0",
+    deps = [":clutchcall_python"],
+    visibility = ["//visibility:public"],
+)
