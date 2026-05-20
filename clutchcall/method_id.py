@@ -37,4 +37,4 @@ class DialplanAction(IntEnum):
     UNMUTE = 9     # app_args: same shape as MUTE
     HOLD = 10      # app_args: ""
     UNHOLD = 11    # app_args: ""
-    SEND_DTMF = 12 # app_args: "<digit>:<mode>:<duration_ms>" (mode = rfc2833 | info | inband)
+    SEND_DTMF = 12 # app_args: "<digit>:<mode>:<duration_ms>" (mode = rfc2833 | info; inband not supported)
