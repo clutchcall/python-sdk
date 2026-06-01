@@ -1,5 +1,46 @@
 from enum import IntEnum
 
+class ErrorCode(IntEnum):
+    SUCCESS = 0
+    ERR_INVALID_TRUNK = 1
+    ERR_INVALID_DESTINATION = 2
+    ERR_RATE_LIMITED = 3
+    ERR_CIRCUIT_BREAKER = 4
+    ERR_INTERNAL_ERROR = 5
+    ERR_VALIDATION_FAILED = 6
+    ERR_UNAUTHORIZED = 7
+
+class DialplanAction(IntEnum):
+    HANGUP = 0
+    PARK = 1
+    MUSIC_ON_HOLD = 2
+    PLAYBACK = 3
+    UNPARK_AND_BRIDGE = 4
+    ANSWER = 5
+    AI_BIDIRECTIONAL_STREAM = 6
+    TRANSFER = 7
+    MUTE = 8
+    UNMUTE = 9
+    HOLD = 10
+    UNHOLD = 11
+    SEND_DTMF = 12
+    SUPERVISE = 13
+    LOOPBACK = 14
+
+class InboundRule(IntEnum):
+    REJECT = 0
+    PLAY_AND_HANGUP = 1
+    NOTIFY_AND_HANGUP = 2
+    HANDLE_AI = 3
+
+class EventType(IntEnum):
+    UNKNOWN = 0
+    CHANNEL_CREATE = 1
+    CHANNEL_ANSWER = 2
+    CHANNEL_HANGUP_COMPLETE = 3
+    CHANNEL_HOLD = 4
+    CHANNEL_RESUME = 5
+
 class MethodID(IntEnum):
     ORIGINATE = 1430677891
     ORIGINATE_BULK = 721069100
@@ -14,27 +55,5 @@ class MethodID(IntEnum):
     EXECUTE_BUCKET_ACTION = 4030863293
     EXECUTE_DIALPLAN = 80147304
     BARGE = 3854301714
+    SUPERVISE_SUBSCRIBE = 425376200
     AUDIO_FRAME = 2991054320
-
-
-class DialplanAction(IntEnum):
-    """Mirrors clutchcall/api/clutchcall_types.hh::DialplanAction.
-
-    Values 0-6 are the original dialplan apps; usable as `default_app`
-    on Dial. Values 7-12 are call-control verbs only valid through
-    ExecuteDialplan against an active call_sid.
-    """
-    HANGUP = 0
-    PARK = 1
-    MUSIC_ON_HOLD = 2
-    PLAYBACK = 3
-    UNPARK_AND_BRIDGE = 4
-    ANSWER = 5
-    AI_BIDIRECTIONAL_STREAM = 6
-    # Call-control verbs (route through ExecuteDialplan):
-    TRANSFER = 7   # app_args: destination URI ("sip:user@host" or "+E.164")
-    MUTE = 8       # app_args: "" (gateway-only) or "wire" (also send recvonly re-INVITE)
-    UNMUTE = 9     # app_args: same shape as MUTE
-    HOLD = 10      # app_args: ""
-    UNHOLD = 11    # app_args: ""
-    SEND_DTMF = 12 # app_args: "<digit>:<mode>:<duration_ms>" (mode = rfc2833 | info; inband not supported)
