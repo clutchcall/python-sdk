@@ -1,0 +1,29 @@
+name: publish
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/875189167966/locations/global/workloadIdentityPools/github/providers/clutchcall
+          service_account: gh-publish@technomers-internal.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: |
+          pip install --quiet build wheel
+          rm -rf out && mkdir out
+          pip wheel . --no-deps -w out
+          python setup.py sdist -d out || true
+          N=clutchcall-sdk; mkdir -p idx/$N
+          { echo "<!DOCTYPE html><html><body>"; for f in out/*.whl out/*.tar.gz; do [ -f "$f" ] || continue; b=$(basename "$f"); h=$(sha256sum "$f"|cut -d' ' -f1); echo "<a href=\"https://artifacts.clutchcall.dev/pip/packages/$b#sha256=$h\">$b</a><br>"; done; echo "</body></html>"; } > idx/$N/index.html
+          gcloud storage cp idx/$N/index.html gs://clutchcall-packages/pip/simple/$N/index.html --content-type=text/html
+          gcloud storage cp out/* gs://clutchcall-packages/pip/packages/
