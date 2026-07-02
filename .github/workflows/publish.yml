@@ -25,10 +25,15 @@ jobs:
           python setup.py sdist -d out || true
           N=clutchcall-sdk
           curl -fsSL https://artifacts.clutchcall.dev/pip/simple/$N/ -o /tmp/old.html 2>/dev/null || true
-          { for f in out/*.whl out/*.tar.gz; do [ -f "$f" ] || continue; b=$(basename "$f"); h=$(sha256sum "$f"|cut -d' ' -f1); echo "<a href=\"https://artifacts.clutchcall.dev/pip/packages/$b#sha256=$h\">$b</a>"; done
-            grep -oE '<a [^>]*>[^<]*</a>' /tmp/old.html 2>/dev/null || true; } \
-            | awk '!seen[$0]++' > /tmp/links
+          NEW=" "; : > /tmp/newlinks
+          for f in out/*.whl out/*.tar.gz; do [ -f "$f" ] || continue; b=$(basename "$f"); h=$(sha256sum "$f"|cut -d' ' -f1)
+            NEW="$NEW$b "; echo "<a href=\"https://artifacts.clutchcall.dev/pip/packages/$b#sha256=$h\">$b</a>" >> /tmp/newlinks; done
+          : > /tmp/oldlinks
+          grep -oE '<a [^>]*>[^<]*</a>' /tmp/old.html 2>/dev/null | while read -r line; do
+            fn=$(printf '%s' "$line" | sed -E 's#.*>([^<]*)</a>#\1#')
+            case "$NEW" in *" $fn "*) ;; *) printf '%s\n' "$line" >> /tmp/oldlinks;; esac
+          done
           mkdir -p idx/$N
-          { echo "<!DOCTYPE html><html><body>"; sed 's#$#<br>#' /tmp/links; echo "</body></html>"; } > idx/$N/index.html
+          { echo "<!DOCTYPE html><html><body>"; sed 's#$#<br>#' /tmp/newlinks /tmp/oldlinks; echo "</body></html>"; } > idx/$N/index.html
           gcloud storage cp idx/$N/index.html gs://clutchcall-packages/pip/simple/$N/index.html --content-type=text/html
           gcloud storage cp out/* gs://clutchcall-packages/pip/packages/
